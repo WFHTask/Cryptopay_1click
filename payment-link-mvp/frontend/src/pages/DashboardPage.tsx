@@ -19,6 +19,7 @@ import {
   Chip,
   LinearProgress,
   Paper,
+  Snackbar,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -26,6 +27,13 @@ import {
   Delete as DeleteIcon,
   Logout as LogoutIcon,
   AdminPanelSettings as AdminIcon,
+  TrendingUp as TrendingUpIcon,
+  AccountBalanceWallet as WalletIcon,
+  ShoppingCart as OrderIcon,
+  MonetizationOn as RevenueIcon,
+  Today as TodayIcon,
+  DateRange as WeekIcon,
+  CalendarMonth as MonthIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -44,6 +52,23 @@ interface PaymentLink {
   created_at: string;
 }
 
+interface TimeStats {
+  orders: number;
+  revenue: number;
+}
+
+interface DashboardStats {
+  total_users: number;
+  total_orders: number;
+  total_revenue: number;
+  pending_orders: number;
+  completed_orders: number;
+  failed_orders: number;
+  today_stats: TimeStats;
+  week_stats: TimeStats;
+  month_stats: TimeStats;
+}
+
 const DashboardPage: React.FC = () => {
   const [paymentLinks, setPaymentLinks] = useState<PaymentLink[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,12 +83,19 @@ const DashboardPage: React.FC = () => {
     callback_url: '', // 添加回调地址字段
   });
   const [creating, setCreating] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [copyError, setCopyError] = useState('');
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchPaymentLinks();
-  }, []);
+    if (isAdmin) {
+      fetchStats();
+    }
+  }, [isAdmin]);
 
   const fetchPaymentLinks = async () => {
     try {
@@ -76,6 +108,22 @@ const DashboardPage: React.FC = () => {
       setPaymentLinks([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    if (!isAdmin) return;
+
+    setStatsLoading(true);
+    try {
+      const response = await api.get('/api/admin/dashboard/stats');
+      console.log('获取统计数据响应:', response.data);
+      setStats(response.data.data);
+    } catch (err: any) {
+      console.error('获取统计数据失败:', err);
+      // 不设置错误，因为统计数据不是必需的
+    } finally {
+      setStatsLoading(false);
     }
   };
 
@@ -121,9 +169,39 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    // 可以添加一个提示
+  const copyToClipboard = async (text: string) => {
+    try {
+      // 检查是否支持现代剪贴板API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        setCopySuccess(true);
+        setCopyError('');
+      } else {
+        // 降级到传统方法
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        if (successful) {
+          setCopySuccess(true);
+          setCopyError('');
+        } else {
+          throw new Error('复制命令失败');
+        }
+      }
+    } catch (err) {
+      console.error('复制失败:', err);
+      setCopyError('复制失败，请手动复制链接');
+      setCopySuccess(false);
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -252,18 +330,204 @@ const DashboardPage: React.FC = () => {
         </Box>
 
         {error && (
-          <Alert 
-            severity="error" 
-            sx={{ 
+          <Alert
+            severity="error"
+            sx={{
               mb: 3,
               background: 'rgba(255, 68, 68, 0.1)',
               border: '1px solid rgba(255, 68, 68, 0.3)',
               color: '#ff4444'
-            }} 
+            }}
             onClose={() => setError('')}
           >
             {error}
           </Alert>
+        )}
+
+        {/* 统计数据卡片 - 仅管理员可见 */}
+        {isAdmin && stats && (
+          <Box sx={{ mb: 4 }}>
+            <Typography
+              variant="h5"
+              component="h2"
+              sx={{
+                color: '#ffffff',
+                fontWeight: 'bold',
+                mb: 3
+              }}
+            >
+              📊 数据统计
+            </Typography>
+
+            {/* 主要统计数据 */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card sx={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  height: '120px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
+                }}>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <OrderIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
+                    <Box>
+                      <Typography variant="body2" sx={{ opacity: 0.8 }}>总订单数</Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                        {stats.total_orders}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={3}>
+                <Card sx={{
+                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                  color: 'white',
+                  height: '120px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxShadow: '0 8px 32px rgba(240, 147, 251, 0.3)'
+                }}>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <RevenueIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
+                    <Box>
+                      <Typography variant="body2" sx={{ opacity: 0.8 }}>总收入</Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                        {stats.total_revenue.toFixed(2)}
+                      </Typography>
+                      <Typography variant="body2" sx={{ opacity: 0.8 }}>USDT</Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={3}>
+                <Card sx={{
+                  background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                  color: 'white',
+                  height: '120px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxShadow: '0 8px 32px rgba(79, 172, 254, 0.3)'
+                }}>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <TrendingUpIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
+                    <Box>
+                      <Typography variant="body2" sx={{ opacity: 0.8 }}>已完成</Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                        {stats.completed_orders}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={3}>
+                <Card sx={{
+                  background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                  color: 'white',
+                  height: '120px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxShadow: '0 8px 32px rgba(67, 233, 123, 0.3)'
+                }}>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <WalletIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
+                    <Box>
+                      <Typography variant="body2" sx={{ opacity: 0.8 }}>待付款</Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                        {stats.pending_orders}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {/* 时间维度统计 */}
+            <Typography
+              variant="h6"
+              component="h3"
+              sx={{
+                color: '#ffffff',
+                fontWeight: 'bold',
+                mb: 2
+              }}
+            >
+              📈 时间统计
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={4}>
+                <Card sx={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  color: 'white'
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <TodayIcon sx={{ mr: 1, color: '#ffc107' }} />
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>今日</Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ mb: 1, opacity: 0.8 }}>
+                      订单数: {stats.today_stats?.orders || stats.completed_orders}
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#ffc107' }}>
+                      {stats.today_stats?.revenue?.toFixed(2) || stats.total_revenue.toFixed(2)} USDT
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <Card sx={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  color: 'white'
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <WeekIcon sx={{ mr: 1, color: '#00ff88' }} />
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>本周</Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ mb: 1, opacity: 0.8 }}>
+                      订单数: {stats.week_stats?.orders || stats.total_orders}
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#00ff88' }}>
+                      {stats.week_stats?.revenue?.toFixed(2) || stats.total_revenue.toFixed(2)} USDT
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <Card sx={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  color: 'white'
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <MonthIcon sx={{ mr: 1, color: '#00ccff' }} />
+                      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>本月</Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ mb: 1, opacity: 0.8 }}>
+                      订单数: {stats.month_stats?.orders || stats.total_orders}
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#00ccff' }}>
+                      {stats.month_stats?.revenue?.toFixed(2) || stats.total_revenue.toFixed(2)} USDT
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
         )}
 
         {loading && (
@@ -702,6 +966,36 @@ const DashboardPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* 复制成功提示 */}
+      <Snackbar
+        open={copySuccess}
+        autoHideDuration={3000}
+        onClose={() => setCopySuccess(false)}
+        message="链接已复制到剪贴板"
+        sx={{
+          '& .MuiSnackbarContent-root': {
+            background: 'linear-gradient(45deg, #00ff88, #00ccff)',
+            color: '#000',
+            fontWeight: 'bold'
+          }
+        }}
+      />
+
+      {/* 复制失败提示 */}
+      <Snackbar
+        open={!!copyError}
+        autoHideDuration={5000}
+        onClose={() => setCopyError('')}
+        message={copyError}
+        sx={{
+          '& .MuiSnackbarContent-root': {
+            background: 'linear-gradient(45deg, #ff4444, #ff6666)',
+            color: '#fff',
+            fontWeight: 'bold'
+          }
+        }}
+      />
     </Box>
   );
 };

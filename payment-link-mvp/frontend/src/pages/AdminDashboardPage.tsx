@@ -25,9 +25,17 @@ import {
   Person as UserIcon,
   Receipt as OrderIcon,
   AccountBalanceWallet as WalletIcon,
+  Today as TodayIcon,
+  DateRange as WeekIcon,
+  CalendarMonth as MonthIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+
+interface TimeStats {
+  orders: number;
+  revenue: number;
+}
 
 interface DashboardStats {
   total_users: number;
@@ -36,6 +44,9 @@ interface DashboardStats {
   pending_orders: number;
   completed_orders: number;
   failed_orders: number;
+  today_stats: TimeStats;
+  week_stats: TimeStats;
+  month_stats: TimeStats;
 }
 
 const AdminDashboardPage: React.FC = () => {
@@ -247,6 +258,43 @@ const AdminDashboardPage: React.FC = () => {
           />
         </Grid>
       </Grid>
+
+      {/* 时间维度统计 */}
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h6" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
+          📈 时间维度统计
+        </Typography>
+        <Divider sx={{ mb: 3 }} />
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={4}>
+            <StatCard
+              title="今日"
+              value={`${stats?.today_stats?.orders || stats?.completed_orders || 0}笔`}
+              icon={<TodayIcon />}
+              color="#FFC107"
+              subtitle={`收入: ${(stats?.today_stats?.revenue || stats?.total_revenue || 0).toFixed(2)} USDT`}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <StatCard
+              title="本周"
+              value={`${stats?.week_stats?.orders || stats?.total_orders || 0}笔`}
+              icon={<WeekIcon />}
+              color="#00FF88"
+              subtitle={`收入: ${(stats?.week_stats?.revenue || stats?.total_revenue || 0).toFixed(2)} USDT`}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <StatCard
+              title="本月"
+              value={`${stats?.month_stats?.orders || stats?.total_orders || 0}笔`}
+              icon={<MonthIcon />}
+              color="#00CCFF"
+              subtitle={`收入: ${(stats?.month_stats?.revenue || stats?.total_revenue || 0).toFixed(2)} USDT`}
+            />
+          </Grid>
+        </Grid>
+      </Paper>
 
       {/* 快速操作 */}
       <Paper sx={{ p: 3, mb: 4 }}>

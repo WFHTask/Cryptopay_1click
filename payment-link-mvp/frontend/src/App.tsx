@@ -21,6 +21,8 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import PaymentPage from './pages/PaymentPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import EmbedPaymentPage from './pages/EmbedPaymentPage';
+import EmbedCodeGeneratorPage from './pages/EmbedCodeGeneratorPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminOrdersPage from './pages/AdminOrdersPage';
@@ -66,7 +68,13 @@ function App() {
                 <DashboardPage />
               </PrivateRoute>
             } />
+            <Route path="/embed" element={
+              <PrivateRoute>
+                <EmbedCodeGeneratorPage />
+              </PrivateRoute>
+            } />
             <Route path="/pay/:linkId" element={<PaymentPage />} />
+            <Route path="/embed/pay/:linkId" element={<EmbedPaymentPage />} />
             <Route path="/payment/success/:orderId" element={<PaymentSuccessPage />} />
             
             {/* 管理员路由 */}

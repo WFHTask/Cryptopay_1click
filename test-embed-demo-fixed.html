@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USDT支付SDK测试页面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border-left: 4px solid #00ff88;
+        }
+
+        .button {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .button-outline {
+            background: transparent;
+            color: #00ff88;
+            border: 2px solid #00ff88;
+        }
+
+        .button-outline:hover {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .status.success { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
+        .status.error { background: rgba(255, 107, 53, 0.2); color: #ff6b35; }
+        .status.info { background: rgba(0, 204, 255, 0.2); color: #00ccff; }
+
+        .iframe-container {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin: 20px 0;
+        }
+
+        h1, h2, h3 { color: #ffffff; }
+        h1 { font-size: 2.5em; margin-bottom: 10px; }
+        h2 { color: #00ff88; border-bottom: 2px solid #00ff88; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 USDT支付SDK测试页面</h1>
+        <p>这是一个完整的测试页面，演示如何使用一键嵌入USDT支付功能</p>
+
+        <div id="status-display" class="status info">
+            系统准备就绪，请选择测试方式
+        </div>
+    </div>
+
+    <!-- 测试方式1: JavaScript SDK 模态框 -->
+    <div class="container">
+        <div class="test-section">
+            <h2>🎯 方式1: JavaScript SDK 模态框</h2>
+            <p>最推荐的集成方式，功能最丰富，用户体验最佳</p>
+
+            <button class="button" onclick="testModalPayment()">
+                立即支付 10 USDT (模态框)
+            </button>
+
+            <h3>代码示例:</h3>
+            <div class="code-block">
+&lt;script src="http://47.109.140.124:3000/usdt-pay-sdk.js">&lt;/script>
+&lt;script>
+USDTPaySDK.init({
+    apiKey: 'pk_live_admin123_demo_key_for_testing_purpose_only_change_in_production',
+    amount: 10,
+    title: 'SDK测试支付',
+    description: '这是一个测试支付订单',
+    onSuccess: function(data) { alert('支付成功!'); },
+    onError: function(error) { alert('支付失败: ' + error.message); }
+});
+&lt;/script>
+            </div>
+        </div>
+    </div>
+
+    <!-- 测试方式2: 嵌入式iframe -->
+    <div class="container">
+        <div class="test-section">
+            <h2>🖼️ 方式2: 嵌入式iframe</h2>
+            <p>适合需要在页面中直接显示支付界面的场景</p>
+
+            <button class="button-outline button" onclick="showEmbedExample()">
+                显示嵌入式支付界面
+            </button>
+
+            <div id="embed-container" style="display: none;">
+                <h3>嵌入式支付界面:</h3>
+                <div class="iframe-container">
+                    <iframe
+                        id="payment-iframe"
+                        width="100%"
+                        height="600"
+                        frameborder="0"
+                        style="border-radius: 12px;">
+                    </iframe>
+                </div>
+            </div>
+
+            <h3>代码示例:</h3>
+            <div class="code-block">
+&lt;!-- 第1步：创建支付链接（参考API调用示例） --&gt;
+&lt;!-- 第2步：使用返回的link_id创建iframe --&gt;
+&lt;iframe
+    src="http://47.109.140.124:3000/pay/YOUR_LINK_ID"
+    width="400"
+    height="600"
+    frameborder="0"
+    style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);"&gt;
+&lt;/iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- 测试方式3: API直接调用 -->
+    <div class="container">
+        <div class="test-section">
+            <h2>🔌 方式3: API直接调用</h2>
+            <p>适合需要自定义支付界面的开发者</p>
+
+            <button class="button-outline button" onclick="testAPICall()">
+                测试创建支付链接API
+            </button>
+
+            <div id="api-result" style="margin-top: 20px;"></div>
+
+            <h3>代码示例:</h3>
+            <div class="code-block">
+// 第1步：登录获取JWT token
+const loginResponse = await fetch('http://47.109.140.124:8080/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        email: 'admin@example.com',
+        password: 'admin123'
+    })
+});
+const loginData = await loginResponse.json();
+
+// 第2步：创建支付链接
+const response = await fetch('http://47.109.140.124:8080/api/payment-links', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + loginData.token
+    },
+    body: JSON.stringify({
+        title: 'API测试支付',
+        amount: 15.50,
+        description: '通过API创建的支付订单'
+    })
+});
+const data = await response.json();
+console.log('支付链接创建成功:', data);
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能测试区域 -->
+    <div class="container">
+        <div class="test-section">
+            <h2>🧪 功能测试</h2>
+            <p>测试各种SDK功能和配置</p>
+
+            <div style="margin: 20px 0;">
+                <button class="button" onclick="testDarkTheme()">测试深色主题</button>
+                <button class="button" onclick="testLightTheme()">测试浅色主题</button>
+                <button class="button" onclick="testCustomSize()">测试自定义尺寸</button>
+                <button class="button" onclick="testCallbacks()">测试回调事件</button>
+            </div>
+
+            <div id="test-log" class="code-block" style="height: 200px; overflow-y: auto;">
+                <div style="color: #00ccff;">测试日志:</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入USDT支付SDK -->
+    <script src="http://47.109.140.124:3000/usdt-pay-sdk.js"></script>
+
+    <script>
+        const API_KEY = 'pk_live_admin123_demo_key_for_testing_purpose_only_change_in_production';
+        const API_BASE_URL = 'http://47.109.140.124:8080/api';
+
+        // 日志函数
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('test-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff6b35' : type === 'success' ? '#00ff88' : '#00ccff';
+            logDiv.innerHTML += `<div style="color: ${color};">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+
+            // 更新状态显示
+            const statusDiv = document.getElementById('status-display');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+        }
+
+        // 测试1: 模态框支付
+        function testModalPayment() {
+            log('启动模态框支付测试...', 'info');
+
+            USDTPaySDK.init({
+                apiKey: API_KEY,
+                amount: 10,
+                title: 'SDK测试支付',
+                description: '这是一个测试支付订单，用于验证SDK功能',
+                theme: 'light',
+                showClose: true,
+                autoClose: 5000,
+
+                onReady: function(data) {
+                    log('SDK初始化完成，支付界面已准备就绪', 'success');
+                    console.log('Ready:', data);
+                },
+
+                onSuccess: function(data) {
+                    log('🎉 支付成功！订单ID: ' + (data.id || 'unknown'), 'success');
+                    console.log('Payment Success:', data);
+                    alert('支付成功！\\n订单信息: ' + JSON.stringify(data, null, 2));
+                },
+
+                onError: function(error) {
+                    log('❌ 支付失败: ' + error.message, 'error');
+                    console.error('Payment Error:', error);
+                    alert('支付失败：' + error.message);
+                },
+
+                onCancel: function() {
+                    log('🚫 用户取消了支付', 'info');
+                    console.log('Payment Cancelled');
+                },
+
+                onPending: function(data) {
+                    log('⏳ 支付订单已创建，等待用户支付...', 'info');
+                    console.log('Payment Pending:', data);
+                }
+            });
+        }
+
+        // 测试2: 嵌入式iframe
+        async function showEmbedExample() {
+            log('准备显示嵌入式支付界面...', 'info');
+
+            try {
+                // 首先登录获取JWT token
+                log('正在获取认证令牌...', 'info');
+                const loginResponse = await fetch(API_BASE_URL + '/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                if (!loginResponse.ok) {
+                    throw new Error('登录失败: ' + loginResponse.status);
+                }
+
+                const loginData = await loginResponse.json();
+                log('✅ 认证成功', 'success');
+
+                // 创建支付链接
+                log('正在创建支付链接...', 'info');
+                const linkResponse = await fetch(API_BASE_URL + '/payment-links', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + loginData.token
+                    },
+                    body: JSON.stringify({
+                        title: 'iframe测试支付',
+                        amount: 12.5,
+                        description: '嵌入式iframe支付测试'
+                    })
+                });
+
+                if (!linkResponse.ok) {
+                    throw new Error('创建支付链接失败: ' + linkResponse.status);
+                }
+
+                const linkData = await linkResponse.json();
+                const linkId = linkData.payment_link.link_id;
+
+                // 使用标准支付页面而不是embed页面
+                const embedUrl = `http://47.109.140.124:3000/pay/${linkId}`;
+
+                document.getElementById('payment-iframe').src = embedUrl;
+                document.getElementById('embed-container').style.display = 'block';
+
+                log('✅ 嵌入式支付界面已加载', 'success');
+                log('支付链接ID: ' + linkId, 'info');
+
+            } catch (error) {
+                log('❌ 创建嵌入式支付失败: ' + error.message, 'error');
+                console.error('Embed Error:', error);
+            }
+        }
+
+        // 测试3: API调用
+        async function testAPICall() {
+            log('测试API调用...', 'info');
+
+            try {
+                // 首先登录获取JWT token
+                log('正在获取认证令牌...', 'info');
+                const loginResponse = await fetch(API_BASE_URL + '/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                if (!loginResponse.ok) {
+                    throw new Error('登录失败: ' + loginResponse.status);
+                }
+
+                const loginData = await loginResponse.json();
+                log('✅ 认证成功', 'success');
+
+                // 创建支付链接
+                log('正在调用支付链接API...', 'info');
+                const response = await fetch(API_BASE_URL + '/payment-links', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + loginData.token
+                    },
+                    body: JSON.stringify({
+                        title: 'API测试支付',
+                        amount: 15.50,
+                        description: '通过API创建的支付订单',
+                        currency: 'USDT'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const resultDiv = document.getElementById('api-result');
+                resultDiv.innerHTML = `
+                    <div class="status success">✅ API调用成功</div>
+                    <div class="code-block">${JSON.stringify(data, null, 2)}</div>
+                `;
+                log('✅ API调用成功，支付链接已创建', 'success');
+                log('支付链接ID: ' + data.payment_link.link_id, 'info');
+
+            } catch (error) {
+                const resultDiv = document.getElementById('api-result');
+                resultDiv.innerHTML = `
+                    <div class="status error">❌ API调用失败</div>
+                    <div class="code-block">错误信息: ${error.message}</div>
+                `;
+                log('❌ API调用失败: ' + error.message, 'error');
+            }
+        }
+
+        // 主题测试
+        function testDarkTheme() {
+            log('测试深色主题...', 'info');
+            USDTPaySDK.init({
+                apiKey: API_KEY,
+                amount: 8,
+                title: '深色主题测试',
+                theme: 'dark',
+                onSuccess: function(data) { log('深色主题支付成功', 'success'); },
+                onError: function(error) { log('深色主题支付失败: ' + error.message, 'error'); }
+            });
+        }
+
+        function testLightTheme() {
+            log('测试浅色主题...', 'info');
+            USDTPaySDK.init({
+                apiKey: API_KEY,
+                amount: 8,
+                title: '浅色主题测试',
+                theme: 'light',
+                onSuccess: function(data) { log('浅色主题支付成功', 'success'); },
+                onError: function(error) { log('浅色主题支付失败: ' + error.message, 'error'); }
+            });
+        }
+
+        function testCustomSize() {
+            log('测试自定义尺寸...', 'info');
+            USDTPaySDK.init({
+                apiKey: API_KEY,
+                amount: 8,
+                title: '自定义尺寸测试',
+                width: '500px',
+                height: '700px',
+                onSuccess: function(data) { log('自定义尺寸支付成功', 'success'); },
+                onError: function(error) { log('自定义尺寸支付失败: ' + error.message, 'error'); }
+            });
+        }
+
+        function testCallbacks() {
+            log('测试完整回调事件...', 'info');
+            USDTPaySDK.init({
+                apiKey: API_KEY,
+                amount: 5,
+                title: '回调测试',
+                onReady: function(data) { log('✅ onReady 回调触发', 'success'); },
+                onSuccess: function(data) { log('✅ onSuccess 回调触发', 'success'); },
+                onError: function(error) { log('✅ onError 回调触发', 'error'); },
+                onCancel: function() { log('✅ onCancel 回调触发', 'info'); },
+                onPending: function(data) { log('✅ onPending 回调触发', 'info'); }
+            });
+        }
+
+        // 页面加载完成后的初始化
+        window.onload = function() {
+            log('🚀 USDT支付SDK测试页面已加载完成', 'success');
+            log('API Key: ' + API_KEY.substring(0, 20) + '...', 'info');
+
+            // 检查SDK是否正确加载
+            if (typeof USDTPaySDK !== 'undefined') {
+                log('✅ USDTPaySDK已成功加载', 'success');
+            } else {
+                log('❌ USDTPaySDK加载失败，请检查网络连接', 'error');
+            }
+        };
+    </script>
+</body>
+</html>

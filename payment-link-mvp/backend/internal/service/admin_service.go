@@ -49,6 +49,17 @@ type DashboardStats struct {
 	PendingOrders   int64   `json:"pending_orders"`
 	CompletedOrders int64   `json:"completed_orders"`
 	FailedOrders    int64   `json:"failed_orders"`
+
+	// 时间维度统计
+	TodayStats    TimeStats `json:"today_stats"`
+	WeekStats     TimeStats `json:"week_stats"`
+	MonthStats    TimeStats `json:"month_stats"`
+}
+
+// 时间维度统计结构体
+type TimeStats struct {
+	Orders  int64   `json:"orders"`
+	Revenue float64 `json:"revenue"`
 }
 
 // 获取所有用户列表
@@ -183,6 +194,36 @@ func (s *AdminService) GetDashboardStats() (*DashboardStats, error) {
 
 	// 失败订单数
 	if err := s.db.Model(&model.PaymentOrder{}).Where("status = ?", "expired").Count(&stats.FailedOrders).Error; err != nil {
+		return nil, err
+	}
+
+	// 获取时间维度统计
+	now := time.Now()
+
+	// 今日统计
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	if err := s.db.Model(&model.PaymentOrder{}).Where("created_at >= ?", todayStart).Count(&stats.TodayStats.Orders).Error; err != nil {
+		return nil, err
+	}
+	if err := s.db.Model(&model.PaymentOrder{}).Where("status = ? AND created_at >= ?", "paid", todayStart).Select("COALESCE(SUM(actual_amount), 0)").Scan(&stats.TodayStats.Revenue).Error; err != nil {
+		return nil, err
+	}
+
+	// 本周统计
+	weekStart := todayStart.AddDate(0, 0, -int(now.Weekday()))
+	if err := s.db.Model(&model.PaymentOrder{}).Where("created_at >= ?", weekStart).Count(&stats.WeekStats.Orders).Error; err != nil {
+		return nil, err
+	}
+	if err := s.db.Model(&model.PaymentOrder{}).Where("status = ? AND created_at >= ?", "paid", weekStart).Select("COALESCE(SUM(actual_amount), 0)").Scan(&stats.WeekStats.Revenue).Error; err != nil {
+		return nil, err
+	}
+
+	// 本月统计
+	monthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	if err := s.db.Model(&model.PaymentOrder{}).Where("created_at >= ?", monthStart).Count(&stats.MonthStats.Orders).Error; err != nil {
+		return nil, err
+	}
+	if err := s.db.Model(&model.PaymentOrder{}).Where("status = ? AND created_at >= ?", "paid", monthStart).Select("COALESCE(SUM(actual_amount), 0)").Scan(&stats.MonthStats.Revenue).Error; err != nil {
 		return nil, err
 	}
 
