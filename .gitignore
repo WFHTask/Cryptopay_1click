@@ -1,94 +1,48 @@
-# 依赖和构建文件
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-package-lock.json
-
-# 环境变量和配置文件
+# 环境变量
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*.local
 
 # 日志文件
 *.log
 logs/
 runtime/
 
-# 数据库文件
-*.db
-*.sqlite
-*.sqlite3
+# 依赖目录
+node_modules/
+vendor/
 
-# 缓存文件
-.cache/
-.tmp/
-tmp/
+# 构建输出
+build/
+dist/
+*.exe
+*.exe~
 
-# IDE和编辑器文件
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# 操作系统文件
+# OS
 .DS_Store
 Thumbs.db
 
-# Docker相关
+# Docker
 .dockerignore
 
-# Go相关
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-*.test
-*.out
-go.work
-
-# Python相关
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# 备份文件
-*.bak
-*.backup
-*~
-
 # 临时文件
+tmp/
+temp/
 *.tmp
-*.temp
 
-# 测试覆盖率
-coverage/
-*.cover
-.coverage
-.pytest_cache/
+# Go
+*.out
+go.sum
 
-# 生产环境文件
-*.pem
-*.key
-*.crt
+# 数据库
+*.db
+*.sqlite
+*.sqlite3
+

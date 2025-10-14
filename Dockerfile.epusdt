@@ -1,0 +1,66 @@
+# Epusdt服务的Dockerfile
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /build
+
+# 安装必要的工具
+RUN apk add --no-cache git gcc musl-dev
+
+# 复制go.mod和go.sum
+COPY go.mod go.sum ./
+
+# 下载依赖
+RUN go mod download
+
+# 复制源代码
+COPY . .
+
+# 编译应用
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o epusdt main.go
+
+# 运行阶段
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates tzdata
+
+WORKDIR /app
+
+# 从构建阶段复制二进制文件
+COPY --from=builder /build/epusdt .
+
+# 复制静态文件
+COPY --from=builder /build/static ./static
+
+# 创建 .env 配置文件
+RUN echo "app_debug=true" > .env && \
+    echo "app_name=epusdt" >> .env && \
+    echo "app_uri=http://localhost:8000" >> .env && \
+    echo "api_auth_token=123456" >> .env && \
+    echo "http_listen=:8000" >> .env && \
+    echo "mysql_host=mysql" >> .env && \
+    echo "mysql_port=3306" >> .env && \
+    echo "mysql_database=epusdt" >> .env && \
+    echo "mysql_user=epusdt" >> .env && \
+    echo "mysql_passwd=root" >> .env && \
+    echo "redis_host=redis" >> .env && \
+    echo "redis_port=6379" >> .env && \
+    echo "redis_passwd=" >> .env && \
+    echo "runtime_root_path=/runtime" >> .env && \
+    echo "log_save_path=/logs/" >> .env && \
+    echo "static_path=./static" >> .env && \
+    echo "order_expiration_time=10" >> .env && \
+    echo "forced_usdt_rate=6.5" >> .env && \
+    echo "tg_bot_token=" >> .env && \
+    echo "tg_proxy=" >> .env && \
+    echo "tg_manage=0" >> .env
+
+# 设置时区
+ENV TZ=Asia/Shanghai
+
+# 创建运行时目录
+RUN mkdir -p /app/runtime/logs
+
+EXPOSE 8000
+
+CMD ["./epusdt", "http", "start"]
+
