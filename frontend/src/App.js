@@ -9,6 +9,7 @@ import Register from './components/merchant/Register';
 import Dashboard from './components/merchant/Dashboard';
 import Wallets from './components/merchant/Wallets';
 import Orders from './components/merchant/Orders';
+import TestPayment from './components/merchant/TestPayment';
 import AdminDashboard from './components/admin/AdminDashboard';
 import AdminMerchants from './components/admin/AdminMerchants';
 import AdminOrders from './components/admin/AdminOrders';
@@ -68,6 +69,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Orders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/merchant/test"
+            element={
+              <ProtectedRoute>
+                <TestPayment />
               </ProtectedRoute>
             }
           />

@@ -23,6 +23,7 @@ const Layout = ({ children }) => {
     { path: '/merchant/dashboard', label: '仪表盘', icon: '📊' },
     { path: '/merchant/wallets', label: '钱包管理', icon: '👛' },
     { path: '/merchant/orders', label: '订单列表', icon: '📋' },
+    { path: '/merchant/test', label: '测试支付', icon: '🧪' },
   ];
 
   return (

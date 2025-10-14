@@ -142,6 +142,13 @@ const Dashboard = () => {
           <div className="action-buttons">
             <button
               className="action-btn"
+              onClick={() => navigate('/merchant/test')}
+            >
+              <span className="action-icon">🧪</span>
+              <span>测试支付</span>
+            </button>
+            <button
+              className="action-btn"
               onClick={() => navigate('/merchant/wallets')}
             >
               <span className="action-icon">👛</span>
