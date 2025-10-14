@@ -1,0 +1,135 @@
+.admin-merchants {
+  padding: 20px;
+}
+
+.page-header.admin {
+  border-color: rgba(255, 68, 68, 0.3);
+  box-shadow: 0 0 30px rgba(255, 68, 68, 0.2);
+}
+
+.page-header.admin h1 {
+  color: #ff4444;
+  text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+}
+
+.page-header.admin h1::before {
+  content: '[ADMIN] ';
+  color: #ff8844;
+}
+
+.stats-summary.admin {
+  background: rgba(255, 68, 68, 0.1);
+  border-color: rgba(255, 68, 68, 0.3);
+  box-shadow: 0 0 20px rgba(255, 68, 68, 0.2);
+}
+
+.stats-summary.admin strong {
+  color: #ff4444;
+  text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+}
+
+.merchants-table-container {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 2px solid rgba(255, 68, 68, 0.2);
+  box-shadow: 0 0 20px rgba(255, 68, 68, 0.1);
+  overflow-x: auto;
+}
+
+.merchants-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.merchants-table thead {
+  background: rgba(255, 68, 68, 0.1);
+  border-bottom: 2px solid rgba(255, 68, 68, 0.3);
+}
+
+.merchants-table th {
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #ff4444;
+  font-size: 13px;
+  white-space: nowrap;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
+}
+
+.merchants-table tbody tr {
+  border-bottom: 1px solid rgba(255, 68, 68, 0.1);
+  transition: all 0.3s;
+}
+
+.merchants-table tbody tr:hover {
+  background: rgba(255, 68, 68, 0.05);
+}
+
+.merchants-table td {
+  padding: 15px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: monospace;
+}
+
+.merchant-id {
+  color: #ff8844;
+  font-weight: 600;
+}
+
+.username {
+  color: #00b8ff;
+  font-weight: 600;
+  text-shadow: 0 0 5px rgba(0, 184, 255, 0.5);
+}
+
+.email {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.api-key code {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  border: 1px solid rgba(255, 68, 68, 0.2);
+}
+
+.toggle-btn {
+  padding: 6px 12px;
+  border: 2px solid;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+}
+
+.toggle-btn.disable {
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff4444;
+  border-color: #ff4444;
+}
+
+.toggle-btn.disable:hover {
+  background: rgba(255, 68, 68, 0.2);
+  box-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
+}
+
+.toggle-btn.enable {
+  background: rgba(0, 255, 159, 0.1);
+  color: #00ff9f;
+  border-color: #00ff9f;
+}
+
+.toggle-btn.enable:hover {
+  background: rgba(0, 255, 159, 0.2);
+  box-shadow: 0 0 15px rgba(0, 255, 159, 0.4);
+}
+

@@ -1,0 +1,41 @@
+.App {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+/* 嵌入模式样式 */
+.embed-mode .App {
+  padding: 10px;
+  background: transparent;
+}
+
+.embed-mode body::before {
+  display: none;
+}
+
+/* 终端风格按钮 */
+.terminal-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.terminal-btn::after {
+  content: '_';
+  animation: blink 1s infinite;
+  margin-left: 3px;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+

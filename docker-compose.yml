@@ -4,112 +4,132 @@ services:
   # MySQL数据库
   mysql:
     image: mysql:8.0
-    container_name: epusdt-mysql
-    restart: unless-stopped
+    container_name: payment_mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
-      MYSQL_ROOT_PASSWORD: epusdt123456
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: epusdt
       MYSQL_USER: epusdt
-      MYSQL_PASSWORD: epusdt123456
-    command: --lower-case-table-names=2 --default-authentication-plugin=mysql_native_password
+      MYSQL_PASSWORD: root
     ports:
       - "3306:3306"
     volumes:
-      - ./epusdt/data/mysql:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
-      timeout: 20s
-      retries: 10
-      interval: 10s
-      start_period: 30s
+      - mysql_data:/var/lib/mysql
+      - ./epusdt/sql/v0.0.1.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - epusdt-network
-      - payment-network
+      - payment_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # phpMyAdmin数据库管理界面
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: payment_phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+      UPLOAD_LIMIT: 100M
+      PMA_ARBITRARY: 1
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+    networks:
+      - payment_network
+    restart: unless-stopped
 
   # Redis缓存
   redis:
     image: redis:7-alpine
-    container_name: epusdt-redis
-    restart: unless-stopped
+    container_name: payment_redis
     ports:
       - "6379:6379"
     volumes:
-      - ./epusdt/data/redis:/data
-    command: redis-server --appendonly yes
+      - redis_data:/data
     networks:
-      - epusdt-network
-      - payment-network
+      - payment_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
+  # Epusdt支付服务
   epusdt:
-    build: ./epusdt
-    container_name: epusdt
-    restart: unless-stopped
+    build:
+      context: ./epusdt/src
+      dockerfile: ../../Dockerfile.epusdt
+    container_name: payment_epusdt
     ports:
       - "8000:8000"
+    volumes:
+      - epusdt_runtime:/app/runtime
     depends_on:
       mysql:
         condition: service_healthy
       redis:
-        condition: service_started
-    environment:
-      - MYSQL_HOST=mysql
-      - MYSQL_PORT=3306
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=epusdt123456
-      - MYSQL_DATABASE=epusdt
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    volumes:
-      - ./epusdt/logs:/app/logs
-      - ./epusdt/runtime:/app/runtime
-      - ./epusdt/.env:/app/.env
+        condition: service_healthy
     networks:
-      - epusdt-network
-      - payment-network
+      - payment_network
+    restart: unless-stopped
 
   # 后端服务
   backend:
     build:
-      context: ./payment-link-mvp/backend
+      context: ./backend
       dockerfile: Dockerfile
-    container_name: payment-backend
-    restart: unless-stopped
+    container_name: payment_backend
+    environment:
+      - PORT=8080
+      - GIN_MODE=release
+      - EPUSDT_URL=http://epusdt:8000
+      - EPUSDT_API_TOKEN=123456
+      - NOTIFY_URL=http://backend:8080/api/payment/callback
+      - REDIRECT_URL=http://localhost:3000/payment/success
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=epusdt
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
     ports:
       - "8080:8080"
-    environment:
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_USER=epusdt
-      - DB_PASSWORD=epusdt123456
-      - DB_NAME=epusdt
-      - JWT_SECRET=your-secret-key-change-in-production
-      - EPUSDT_BASE_URL=http://epusdt:8000
-      - EPUSDT_AUTH_TOKEN=epusdt_password_xasddawqe
     depends_on:
       mysql:
         condition: service_healthy
       epusdt:
         condition: service_started
     networks:
-      - epusdt-network
-      - payment-network
+      - payment_network
+    restart: unless-stopped
 
   # 前端服务
   frontend:
     build:
-      context: ./payment-link-mvp/frontend
+      context: ./frontend
       dockerfile: Dockerfile
-    container_name: payment-frontend
-    restart: unless-stopped
+    container_name: payment_frontend
     ports:
-      - "3001:3000"
+      - "3000:80"
     depends_on:
       - backend
     networks:
-      - payment-network
+      - payment_network
+    restart: unless-stopped
 
 networks:
-  epusdt-network:
+  payment_network:
     driver: bridge
-  payment-network:
-    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
+  epusdt_runtime:
+
